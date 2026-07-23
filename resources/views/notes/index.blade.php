@@ -40,6 +40,9 @@
 </head>
 <body class="h-full bg-slate-950 text-slate-100 antialiased overflow-hidden flex flex-col select-none">
 
+    <!-- Hidden Input for Importing .txt files -->
+    <input type="file" id="import-file-input" accept=".txt,text/plain" class="hidden" onchange="handleFileImport(event)">
+
     <!-- Windows 11 Notepad Top Header Bar with Tabs -->
     <header class="bg-slate-900 border-b border-slate-800/90 flex items-center justify-between px-3 pt-2 shrink-0">
         <!-- Tabs Container -->
@@ -80,6 +83,9 @@
                 <div id="menu-arquivo" class="dropdown-content absolute left-0 top-full mt-1 w-52 bg-slate-900 border border-slate-700/90 rounded-lg shadow-2xl py-1 hidden z-50">
                     <button onclick="createNewNote(); closeAllDropdowns();" class="w-full text-left px-3 py-1.5 hover:bg-slate-800 flex items-center justify-between text-slate-200 cursor-pointer">
                         <span>Nova Nota</span> <span class="text-[10px] text-slate-500">Ctrl+N</span>
+                    </button>
+                    <button onclick="triggerFileImport(); closeAllDropdowns();" class="w-full text-left px-3 py-1.5 hover:bg-slate-800 flex items-center justify-between text-slate-200 cursor-pointer">
+                        <span>Importar (.txt)</span> <span class="text-[10px] text-slate-500">📂</span>
                     </button>
                     @if($activeNote)
                         <button onclick="autoSaveNote(); closeAllDropdowns();" class="w-full text-left px-3 py-1.5 hover:bg-slate-800 flex items-center justify-between text-slate-200 cursor-pointer">
@@ -191,9 +197,14 @@
                 </div>
                 <h2 class="text-base font-semibold text-slate-200">Nenhum documento aberto</h2>
                 <p class="text-xs text-slate-400 mt-1 max-w-sm">Crie uma nova nota ou selecione uma aba existente para começar a digitar.</p>
-                <button onclick="createNewNote()" class="mt-4 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium rounded-lg transition shadow-md shadow-indigo-600/20">
-                    + Nova Nota (Ctrl+N)
-                </button>
+                <div class="flex gap-3 mt-4">
+                    <button onclick="createNewNote()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium rounded-lg transition shadow-md shadow-indigo-600/20">
+                        + Nova Nota (Ctrl+N)
+                    </button>
+                    <button onclick="triggerFileImport()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-lg transition border border-slate-700">
+                        📂 Importar Arquivo .txt
+                    </button>
+                </div>
             </div>
         @endif
     </main>
@@ -203,6 +214,50 @@
         let saveTimeout = null;
         let isMonospace = false;
         const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+        // File Import Functions
+        function triggerFileImport() {
+            document.getElementById('import-file-input').click();
+        }
+
+        function handleFileImport(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const fileName = file.name.replace(/\.[^/.]+$/, "");
+            const reader = new FileReader();
+
+            reader.onload = async function(e) {
+                const textContent = e.target.result;
+
+                try {
+                    const response = await fetch("{{ route('notes.import') }}", {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': csrfToken,
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            title: fileName || 'Nota Importada',
+                            content: textContent,
+                            category: 'Geral'
+                        })
+                    });
+
+                    const data = await response.json();
+                    if (data.success) {
+                        window.location.href = "{{ route('notes.index') }}?active=" + data.note.id;
+                    }
+                } catch (err) {
+                    console.error('Erro ao importar arquivo:', err);
+                    alert('Falha ao importar o arquivo .txt');
+                }
+            };
+
+            reader.readAsText(file);
+            event.target.value = '';
+        }
 
         // Toggle and close dropdowns
         function toggleDropdown(event, id) {
@@ -225,12 +280,15 @@
             closeAllDropdowns();
         });
 
-        // Keyboard Shortcuts (Ctrl+N, Ctrl+S, Ctrl+E)
+        // Keyboard Shortcuts (Ctrl+N, Ctrl+S, Ctrl+E, Ctrl+O)
         document.addEventListener('keydown', (e) => {
             if (e.ctrlKey || e.metaKey) {
                 if (e.key.toLowerCase() === 'n') {
                     e.preventDefault();
                     createNewNote();
+                } else if (e.key.toLowerCase() === 'o') {
+                    e.preventDefault();
+                    triggerFileImport();
                 } else if (e.key.toLowerCase() === 's') {
                     e.preventDefault();
                     autoSaveNote();

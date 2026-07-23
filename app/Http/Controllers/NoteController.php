@@ -145,4 +145,28 @@ class NoteController extends Controller
             'Content-Disposition' => 'attachment; filename="'.$filename.'"',
         ]);
     }
+
+    /**
+     * Importa um arquivo de texto criando uma nova nota.
+     */
+    public function import(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'content' => 'nullable|string',
+            'category' => 'nullable|string|max:100',
+        ]);
+
+        $note = Note::create([
+            'title' => $validated['title'],
+            'content' => $validated['content'] ?? '',
+            'category' => $validated['category'] ?? 'Geral',
+            'is_pinned' => false,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'note' => $note,
+        ]);
+    }
 }

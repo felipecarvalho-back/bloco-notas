@@ -93,3 +93,21 @@ test('pode exportar uma nota em formato txt', function () {
         ->assertSee('Nota Exportação')
         ->assertSee('Linha 1 de conteúdo');
 });
+
+test('pode importar um arquivo de texto para criar uma nova nota', function () {
+    $response = $this->postJson('/notes/import', [
+        'title' => 'documento_importado',
+        'content' => 'Conteúdo importado do arquivo .txt local.',
+        'category' => 'Geral',
+    ]);
+
+    $response->assertStatus(200)
+        ->assertJson([
+            'success' => true,
+        ]);
+
+    $this->assertDatabaseHas('notes', [
+        'title' => 'documento_importado',
+        'content' => 'Conteúdo importado do arquivo .txt local.',
+    ]);
+});
