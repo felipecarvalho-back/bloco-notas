@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use Native\Desktop\Contracts\ProvidesPhpIni;
+use Native\Desktop\Facades\Menu;
 use Native\Desktop\Facades\Window;
 
 class NativeAppServiceProvider implements ProvidesPhpIni
@@ -13,12 +14,20 @@ class NativeAppServiceProvider implements ProvidesPhpIni
      */
     public function boot(): void
     {
+        Menu::create(
+            Menu::file('Arquivo'),
+            Menu::edit('Editar'),
+            Menu::view('Exibir'),
+            Menu::window('Janela'),
+            Menu::help('Ajuda')
+        );
+
         Window::open()
-            ->title('Bloco de Notas Desktop')
-            ->width(1150)
-            ->height(740)
-            ->minWidth(800)
-            ->minHeight(550);
+            ->title('Bloco de Notas')
+            ->width(1100)
+            ->height(720)
+            ->minWidth(750)
+            ->minHeight(500);
     }
 
     /**
