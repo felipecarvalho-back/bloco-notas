@@ -71,25 +71,25 @@
         </div>
     </header>
 
-    <!-- Windows Notepad Menu Bar (Arquivo, Editar, Exibir) -->
-    <nav class="bg-slate-900/90 border-b border-slate-800/80 px-4 py-1 flex items-center justify-between shrink-0 text-xs text-slate-300">
+    <!-- Windows Notepad Interactive Menu Bar (Arquivo, Editar, Exibir) -->
+    <nav class="bg-slate-900/90 border-b border-slate-800/80 px-4 py-1 flex items-center justify-between shrink-0 text-xs text-slate-300 relative z-40">
         <div class="flex items-center gap-1">
             <!-- Menu Dropdown: Arquivo -->
-            <div class="relative group">
-                <button class="px-2.5 py-1 rounded hover:bg-slate-800 transition font-medium focus:outline-none">Arquivo</button>
-                <div class="absolute left-0 top-full mt-0.5 w-48 bg-slate-900 border border-slate-700/80 rounded-lg shadow-xl py-1 hidden group-hover:block z-50">
-                    <button onclick="createNewNote()" class="w-full text-left px-3 py-1.5 hover:bg-slate-800 flex items-center justify-between">
+            <div class="relative">
+                <button onclick="toggleDropdown(event, 'menu-arquivo')" class="px-2.5 py-1 rounded hover:bg-slate-800 transition font-medium focus:outline-none cursor-pointer">Arquivo</button>
+                <div id="menu-arquivo" class="dropdown-content absolute left-0 top-full mt-1 w-52 bg-slate-900 border border-slate-700/90 rounded-lg shadow-2xl py-1 hidden z-50">
+                    <button onclick="createNewNote(); closeAllDropdowns();" class="w-full text-left px-3 py-1.5 hover:bg-slate-800 flex items-center justify-between text-slate-200 cursor-pointer">
                         <span>Nova Nota</span> <span class="text-[10px] text-slate-500">Ctrl+N</span>
                     </button>
                     @if($activeNote)
-                        <button onclick="autoSaveNote()" class="w-full text-left px-3 py-1.5 hover:bg-slate-800 flex items-center justify-between">
+                        <button onclick="autoSaveNote(); closeAllDropdowns();" class="w-full text-left px-3 py-1.5 hover:bg-slate-800 flex items-center justify-between text-slate-200 cursor-pointer">
                             <span>Salvar</span> <span class="text-[10px] text-slate-500">Ctrl+S</span>
                         </button>
-                        <a href="{{ route('notes.export', $activeNote) }}" class="w-full text-left px-3 py-1.5 hover:bg-slate-800 flex items-center justify-between block">
+                        <a href="{{ route('notes.export', $activeNote) }}" onclick="closeAllDropdowns()" class="w-full text-left px-3 py-1.5 hover:bg-slate-800 flex items-center justify-between text-slate-200 block cursor-pointer">
                             <span>Exportar (.txt)</span> <span class="text-[10px] text-slate-500">Ctrl+E</span>
                         </a>
                         <hr class="border-slate-800 my-1">
-                        <button onclick="deleteNote()" class="w-full text-left px-3 py-1.5 hover:bg-rose-950/60 text-rose-400 flex items-center justify-between">
+                        <button onclick="deleteNote(); closeAllDropdowns();" class="w-full text-left px-3 py-1.5 hover:bg-rose-950/60 text-rose-400 flex items-center justify-between cursor-pointer">
                             <span>Excluir Nota</span> <span class="text-[10px] text-slate-500">Del</span>
                         </button>
                     @endif
@@ -97,29 +97,29 @@
             </div>
 
             <!-- Menu Dropdown: Editar -->
-            <div class="relative group">
-                <button class="px-2.5 py-1 rounded hover:bg-slate-800 transition font-medium focus:outline-none">Editar</button>
-                <div class="absolute left-0 top-full mt-0.5 w-48 bg-slate-900 border border-slate-700/80 rounded-lg shadow-xl py-1 hidden group-hover:block z-50">
+            <div class="relative">
+                <button onclick="toggleDropdown(event, 'menu-editar')" class="px-2.5 py-1 rounded hover:bg-slate-800 transition font-medium focus:outline-none cursor-pointer">Editar</button>
+                <div id="menu-editar" class="dropdown-content absolute left-0 top-full mt-1 w-56 bg-slate-900 border border-slate-700/90 rounded-lg shadow-2xl py-1 hidden z-50">
                     @if($activeNote)
-                        <button onclick="togglePinNote()" class="w-full text-left px-3 py-1.5 hover:bg-slate-800 flex items-center justify-between">
+                        <button onclick="togglePinNote(); closeAllDropdowns();" class="w-full text-left px-3 py-1.5 hover:bg-slate-800 flex items-center justify-between text-slate-200 cursor-pointer">
                             <span>{{ $activeNote->is_pinned ? 'Desfixar Nota' : 'Fixar no Topo' }}</span> <span>📍</span>
                         </button>
                     @endif
-                    <button onclick="toggleFontFamily()" class="w-full text-left px-3 py-1.5 hover:bg-slate-800 flex items-center justify-between">
+                    <button onclick="toggleFontFamily(); closeAllDropdowns();" class="w-full text-left px-3 py-1.5 hover:bg-slate-800 flex items-center justify-between text-slate-200 cursor-pointer">
                         <span>Alternar Fonte (Mono/Sans)</span> <span class="text-[10px] text-slate-500">🔤</span>
                     </button>
                 </div>
             </div>
 
             <!-- Menu Dropdown: Exibir / Categorias -->
-            <div class="relative group">
-                <button class="px-2.5 py-1 rounded hover:bg-slate-800 transition font-medium focus:outline-none">Exibir</button>
-                <div class="absolute left-0 top-full mt-0.5 w-44 bg-slate-900 border border-slate-700/80 rounded-lg shadow-xl py-1 hidden group-hover:block z-50">
-                    <a href="{{ route('notes.index', ['category' => 'Todas']) }}" class="block px-3 py-1.5 hover:bg-slate-800">Todas as Notas</a>
-                    <a href="{{ route('notes.index', ['category' => 'Fixadas']) }}" class="block px-3 py-1.5 hover:bg-slate-800">📍 Notas Fixadas</a>
+            <div class="relative">
+                <button onclick="toggleDropdown(event, 'menu-exibir')" class="px-2.5 py-1 rounded hover:bg-slate-800 transition font-medium focus:outline-none cursor-pointer">Exibir</button>
+                <div id="menu-exibir" class="dropdown-content absolute left-0 top-full mt-1 w-48 bg-slate-900 border border-slate-700/90 rounded-lg shadow-2xl py-1 hidden z-50">
+                    <a href="{{ route('notes.index', ['category' => 'Todas']) }}" class="block px-3 py-1.5 hover:bg-slate-800 text-slate-200">Todas as Notas</a>
+                    <a href="{{ route('notes.index', ['category' => 'Fixadas']) }}" class="block px-3 py-1.5 hover:bg-slate-800 text-slate-200">📍 Notas Fixadas</a>
                     <hr class="border-slate-800 my-1">
                     @foreach($categories as $cat)
-                        <a href="{{ route('notes.index', ['category' => $cat]) }}" class="block px-3 py-1.5 hover:bg-slate-800">{{ $cat }}</a>
+                        <a href="{{ route('notes.index', ['category' => $cat]) }}" class="block px-3 py-1.5 hover:bg-slate-800 text-slate-200">{{ $cat }}</a>
                     @endforeach
                 </div>
             </div>
@@ -203,6 +203,27 @@
         let saveTimeout = null;
         let isMonospace = false;
         const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+        // Toggle and close dropdowns
+        function toggleDropdown(event, id) {
+            event.stopPropagation();
+            const target = document.getElementById(id);
+            const isHidden = target.classList.contains('hidden');
+            closeAllDropdowns();
+            if (isHidden) {
+                target.classList.remove('hidden');
+            }
+        }
+
+        function closeAllDropdowns() {
+            document.querySelectorAll('.dropdown-content').forEach(el => {
+                el.classList.add('hidden');
+            });
+        }
+
+        window.addEventListener('click', () => {
+            closeAllDropdowns();
+        });
 
         // Keyboard Shortcuts (Ctrl+N, Ctrl+S, Ctrl+E)
         document.addEventListener('keydown', (e) => {
